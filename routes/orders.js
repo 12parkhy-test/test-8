@@ -1,11 +1,18 @@
 const express = require('express')
+const { TokenExpiredError } = require('jsonwebtoken')
 const router = express.Router()
 const { isAuthenticated, isAdmin } = require('../middlewares/authentication')
 const CartItem = require('../models/CartItem')
 const User = require('../models/User')
+const { v4: uuid } = require('uuid')
+
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
+
+const stripe = require('stripe')(process.env.stripe_secret_key)
 
 router.get('/', isAuthenticated, async (req, res) => {
-    //console.log('orderHistory', orderHistory)
     try {
         const user = await User.findById(req.user.id)
         let orderHistory = JSON.parse(user.orderHistory)
@@ -35,7 +42,6 @@ router.get('/', isAuthenticated, async (req, res) => {
 })
 
 router.post('/', isAuthenticated, async (req, res) => {
-    console.log('req.body', req.body)
     const { cartItems, subtotal, taxes, tips, total, orderId, date } = req.body
     const user = await User.findById(req.user.id)
     try {
@@ -137,4 +143,57 @@ router.get('/history', isAuthenticated, async (req, res) => {
 //     }
 // })
 
+router.post('/checkout', isAuthenticated, async (req, res) => {
+    const { orderInfo, stripeToken } = req.body
+    const idempotencyKey = uuid()
+    let { cartItems } = orderInfo
+    let storage = {}
+    storage.cartItems = cartItems
+    storage.subtotal = orderInfo.subtotal
+    storage.taxes = orderInfo.taxes
+    storage.tips = orderInfo.tips
+    storage.orderId = idempotencyKey
+    storageStr = JSON.stringify(storage)
+    let status
+    let error
+    
+    try {
+        const customer = await stripe.customers.create({
+            email: stripeToken.email,
+            source: stripeToken.id
+        })
+
+        const charge = await stripe.charges.create(
+        {
+            amount: (orderInfo.total).toFixed(2) * 100,
+            currency: "usd",
+            customer: customer.id,
+            receipt_email: stripeToken.email,
+            description: `${storageStr}`,
+            shipping: {
+                name: stripeToken.card.name,
+                address: {
+                    line1: stripeToken.card.address_line1,
+                    line2: stripeToken.card.address_line2,
+                    city: stripeToken.card.address_city,
+                    country: stripeToken.card.address_country,
+                    postal_code: stripeToken.card.address_zip
+                }
+            }
+        },
+        {
+            idempotencyKey
+        }
+    )
+    status = 'success'
+    return res.json({error, status, charge, orderDate: new Date()})
+    }
+    catch (error) {
+        console.log(error)
+        status = 'failure'
+        return res.json({error, status, msg: 'Something went wrong, please try again' })
+    }
+})
+
 module.exports = router
+

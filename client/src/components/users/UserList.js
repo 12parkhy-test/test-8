@@ -50,7 +50,6 @@ class UserList extends Component {
             orderHistory: temp,
             sumTotals: (sumTotals).toFixed(2)
         })
-        console.log(temp)
         this.toggle()
     }
 

@@ -1,17 +1,21 @@
-import { ADD_TO_CART, 
-    CARTITEMS_LOADING, 
-    GET_CARTITEMS, 
-    DELETE_CARTITEM, 
-    ADD_TO_ORDERHISTORY, 
-    CLEAR_CART, 
-    ORDERHISTORY_LOADING, 
-    GET_ORDERHISTORY, 
-    ORDERRESULT_LOADING, 
-    GET_ORDERRESULT, 
-    ORDERDETAIL_LOADING, 
-    GET_ORDERDETAIL } from './types'
+import {
+    ADD_TO_CART,
+    CARTITEMS_LOADING,
+    GET_CARTITEMS,
+    DELETE_CARTITEM,
+    ADD_TO_ORDERHISTORY,
+    CLEAR_CART,
+    ORDERHISTORY_LOADING,
+    GET_ORDERHISTORY,
+    ORDERRESULT_LOADING,
+    GET_ORDERRESULT,
+    ORDERDETAIL_LOADING,
+    GET_ORDERDETAIL,
+    ADD_TO_CHECKOUT,
+    CLEAR_CHECKOUT
+} from './types'
 import axios from 'axios'
-import {getErrors} from './errorActions'
+import { getErrors } from './errorActions'
 
 export const changeCartItemsLoading = () => {
     return {
@@ -193,11 +197,43 @@ export const getOrderDetail = (id) => (dispatch, getState) => {
     }
     axios.get(`/api/orders/order/${id}`, config)
         .then((res) => {
-            console.log('payload', res.data)
             return dispatch({
                 type: GET_ORDERDETAIL,
                 payload: res.data
             })
+        })
+        .catch((error) => {
+            return dispatch(getErrors(error.response.data, error.response.status))
+        })
+}
+
+export const clearCheckout = () => {
+    return {
+        type: CLEAR_CHECKOUT
+    }
+}
+
+export const checkout = (orderInfo, stripeToken) => (dispatch, getState) => {
+    //dispatch(clearCheckout())
+    const token = getState().authentication.token
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }
+    if (token) {
+        config.headers['x-auth-token'] = token
+    }
+    const body = JSON.stringify({ orderInfo, stripeToken })
+    axios.post('/api/orders/checkout', body, config)
+        .then((res) => {
+            const { status, error, charge, orderDate } = res.data
+            const {amount, billing_details, created, description, receipt_url, shipping} = charge
+            let parsedDesc = JSON.parse(description)
+            let {cartItems, subtotal, taxes, tips, orderId} = parsedDesc
+            dispatch(orderItems({cartItems, subtotal, taxes, date: orderDate, tips, total: amount * 0.01, orderId}))
+            dispatch(clearCart())
+            window.location.href = '/orders'
         })
         .catch((error) => {
             return dispatch(getErrors(error.response.data, error.response.status))

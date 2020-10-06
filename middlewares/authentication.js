@@ -23,12 +23,10 @@ const isAuthenticated = (req, res, next) => {
 const isAdmin = async (req, res, next) => {
     const token = await req.header('x-auth-token')
     if (!token) {
-        console.log('There is no token, unauthorized')
         return res.status(401).json({ msg: 'There is no token, unauthorized' })
     }
     try {
         const decodedUser = jwt.verify(token, process.env.jwtSecret)
-        console.log(decodedUser)
         if (decodedUser.id == process.env.adminId) {
             console.log("I am an admin")
             req.user = decodedUser

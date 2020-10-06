@@ -1,10 +1,11 @@
 import React, { Component, Fragment } from 'react'
 import { Container, Table, Card, Button, CardTitle, Row, Col, Label, Input } from 'reactstrap'
 import { connect } from 'react-redux'
-import { getCartItems, deleteCartItem, orderItems, clearCart } from '../actions/orderActions'
+import { getCartItems, deleteCartItem, orderItems, clearCart, checkout } from '../actions/orderActions'
 import PropTypes from 'prop-types'
 import { Redirect, Link } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
+import StripeCheckout from 'react-stripe-checkout'
 
 class CartItemList extends Component {
     state = {
@@ -30,6 +31,12 @@ class CartItemList extends Component {
 
     onChange = (event) => {
         this.setState({ [event.target.name]: parseFloat(event.target.value) })
+    }
+
+    handleToken = (orderInfo, token) => {
+        orderInfo.tips = parseFloat(this.state.tips)
+        orderInfo.total = parseFloat((orderInfo.subtotal + orderInfo.taxes + orderInfo.tips).toFixed(2))
+        this.props.checkout(orderInfo, token)
     }
 
     render() {
@@ -79,6 +86,13 @@ class CartItemList extends Component {
                                 <CardTitle><text style={{ float: "left" }}>Total</text><text style={{ float: "right" }}>${(subtotal + taxes + this.state.tips).toFixed(2)}</text></CardTitle>
                                 <CardTitle><Button color="info" style={{ width: "100%" }}
                                     onClick={this.handlePay.bind(this, { cartItems, subtotal, taxes })}>Pay</Button></CardTitle>
+                                <CardTitle><StripeCheckout
+                                 stripeKey="pk_test_51HD7H7GbsiPkKoEWGjyXFO3gDk6FzrizqBf7hkQ6o8XKW6bz0eOPKmF3qUjGFV4ksOt1ZuYePyxvW3RGsYmF41yU00EkOccneO" 
+                                 token={this.handleToken.bind(this, { cartItems, subtotal, taxes })}
+                                 billingAddress
+                                 shippingAddress
+                                 amount={((subtotal + taxes + this.state.tips).toFixed(2)) * 100}
+                                 /></CardTitle>
                             </Card>
                             <div style={{ marginTop: "2.5rem", display: "flex", alignItems: 'center', justifyContent: 'center' }}>
                                 <Label for="tips" style={{ marginRight: "2.5rem" }}>Tips</Label>
@@ -115,4 +129,4 @@ const mapStateToProps = (state) => ({
     authentication: state.authentication
 })
 
-export default connect(mapStateToProps, { getCartItems, deleteCartItem, orderItems, clearCart })(CartItemList) 
+export default connect(mapStateToProps, { getCartItems, deleteCartItem, orderItems, clearCart, checkout })(CartItemList) 

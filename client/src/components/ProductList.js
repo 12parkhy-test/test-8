@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 
 class ProductList extends Component {
     state = {
-        quantity: 0,
+        quantities: {},
         msg: ''
     }
 
@@ -20,18 +20,20 @@ class ProductList extends Component {
     }
 
     handleAddToCart = (productInfo) => {
-        if (parseInt(this.state.quantity) > 0) {
-            productInfo['quantity'] = parseInt(this.state.quantity)
+        if (parseInt(this.state.quantities[productInfo.id]) > 0) {
+            productInfo['quantity'] = parseInt(this.state.quantities[productInfo.id])
             this.props.addToCart(productInfo)
+            this.setState({msg: ""})
         }
         else {
             this.setState({msg: "Quantity must be at least 1"})
         }
-        
     } 
 
     onChange = (event) => {
-        this.setState({ [event.target.name]: event.target.value, msg: '' })
+        let productId = event.target.id
+        let productQuantity = event.target.value
+        this.setState({quantities: {...this.state.quantities, [event.target.id]: event.target.value}})
     }
 
     render() {
@@ -64,7 +66,7 @@ class ProductList extends Component {
                                     <Input
                                         type="number"
                                         name="quantity"
-                                        id="quantity"
+                                        id={_id}
                                         min="1"
                                         onChange={this.onChange}
                                         style={{width:"3.5rem", margin: 'auto'}}

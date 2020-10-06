@@ -11,7 +11,9 @@ import {
     ORDERRESULT_LOADING,
     GET_ORDERRESULT,
     ORDERDETAIL_LOADING,
-    GET_ORDERDETAIL
+    GET_ORDERDETAIL,
+    ADD_TO_CHECKOUT,
+    CLEAR_CHECKOUT
 } from '../actions/types'
 
 const initialState = {
@@ -19,6 +21,7 @@ const initialState = {
     orderHistory: [],
     orderResult: {},
     orderDetail: {},
+    checkout: '',
     cartItemsIsLoading: false,
     orderHistoryIsLoading: false,
     orderResultIsLoading: false,
@@ -31,7 +34,7 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 cartItems: action.payload,
-                isLoading: false
+                cartItemsIsLoading: false
             };
         case ADD_TO_CART:
             return {
@@ -54,6 +57,16 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 cartItems: []
+            };
+        case ADD_TO_CHECKOUT:
+            return {
+                ...state,
+                checkout: 'action.payload'
+            };
+        case CLEAR_CHECKOUT:
+            return {
+                ...state,
+                checkout: ''
             };
         case CARTITEMS_LOADING:
             return {

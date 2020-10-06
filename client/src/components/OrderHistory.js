@@ -25,7 +25,6 @@ class OrderHistory extends Component {
     }
 
     handleDetails = (orderInfo) => {
-        console.log(orderInfo)
         this.setState({
             orderInfo: orderInfo,
             orderItems: orderInfo.orderItems
@@ -37,7 +36,8 @@ class OrderHistory extends Component {
         const { orderHistory } = this.props.order
         const { isAuthenticated, user } = this.props.authentication
         let totals = orderHistory.map((order) => { return order.total })
-        let sumTotals = (totals.reduce((a, b) => { return a + b }, 0)).toFixed(2)
+        let sumTotals = parseFloat((totals.reduce((a, b) => { return a + b }, 0)).toFixed(2))
+        sumTotals = sumTotals.toLocaleString()
         return (
             <Container>
                 {orderHistory.length != 0 ? (<Fragment>
