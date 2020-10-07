@@ -16,12 +16,12 @@ router.get('/', isAdmin, async (req, res) => {
         .then((users) => { return res.json(users) })
 })
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     const { name, email, password } = req.body
     if (!name || !email || !password) {
         return res.status(400).json({ msg: 'All fields must be filled in' })
     }
-    User.findOne({ email: email })
+    await User.findOne({ email: email })
         .then((user) => {
             if (user) {
                 return res.status(400).json({ msg: 'There is an account with that email' })
@@ -60,12 +60,12 @@ router.post('/', (req, res) => {
         })
 })
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body
     if (!email || !password) {
         return res.status(400).json({ msg: 'All fields must be filled in' })
     }
-    User.findOne({ email: email })
+    await User.findOne({ email: email })
         .then((user) => {
             if (!user) {
                 return res.status(400).json({ msg: 'There is not an account with that email' })
@@ -95,8 +95,8 @@ router.post('/login', (req, res) => {
         })
 })
 
-router.get('/user', isAuthenticated, (req, res) => {
-    User.findById(req.user.id)
+router.get('/user', isAuthenticated, async (req, res) => {
+    await User.findById(req.user.id)
         .select('-password')
         .then((user) => {
             return res.json(user)

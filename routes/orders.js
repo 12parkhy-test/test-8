@@ -42,13 +42,13 @@ router.get('/', isAuthenticated, async (req, res) => {
 })
 
 router.post('/', isAuthenticated, async (req, res) => {
-    const { cartItems, subtotal, taxes, tips, total, orderId, date } = req.body
+    const { cartItems, subtotal, taxes, tips, total, orderId, date, billing_details, receipt_url, shipping } = req.body
     const user = await User.findById(req.user.id)
     try {
         if (user.orderHistory) {
             //console.log("Exists")
             let orderHistory = JSON.parse(user.orderHistory)
-            let order = { orderItems: cartItems, subtotal, taxes, tips, total, orderId, date }
+            let order = { orderItems: cartItems, subtotal, taxes, tips, total, orderId, date, billing_details, receipt_url, shipping }
             orderHistory.push(order)
             user.orderHistory = JSON.stringify(orderHistory)
             user.cartItems = ''
@@ -59,7 +59,7 @@ router.post('/', isAuthenticated, async (req, res) => {
         }
         else {
             //console.log("Doesnt exists")
-            const order = { orderItems: cartItems, subtotal, taxes, tips, total, orderId, date }
+            const order = { orderItems: cartItems, subtotal, taxes, tips, total, orderId, date, billing_details, receipt_url, shipping }
             const orderHistory = [order]
             user.orderHistory = JSON.stringify(orderHistory)
             user.cartItems = ''
@@ -156,7 +156,7 @@ router.post('/checkout', isAuthenticated, async (req, res) => {
     storageStr = JSON.stringify(storage)
     let status
     let error
-    
+
     try {
         const customer = await stripe.customers.create({
             email: stripeToken.email,
@@ -164,34 +164,34 @@ router.post('/checkout', isAuthenticated, async (req, res) => {
         })
 
         const charge = await stripe.charges.create(
-        {
-            amount: (orderInfo.total).toFixed(2) * 100,
-            currency: "usd",
-            customer: customer.id,
-            receipt_email: stripeToken.email,
-            description: `${storageStr}`,
-            shipping: {
-                name: stripeToken.card.name,
-                address: {
-                    line1: stripeToken.card.address_line1,
-                    line2: stripeToken.card.address_line2,
-                    city: stripeToken.card.address_city,
-                    country: stripeToken.card.address_country,
-                    postal_code: stripeToken.card.address_zip
+            {
+                amount: (orderInfo.total).toFixed(2) * 100,
+                currency: "usd",
+                customer: customer.id,
+                receipt_email: stripeToken.email,
+                description: `${storageStr}`,
+                shipping: {
+                    name: stripeToken.card.name,
+                    address: {
+                        line1: stripeToken.card.address_line1,
+                        line2: stripeToken.card.address_line2,
+                        city: stripeToken.card.address_city,
+                        country: stripeToken.card.address_country,
+                        postal_code: stripeToken.card.address_zip
+                    }
                 }
+            },
+            {
+                idempotencyKey
             }
-        },
-        {
-            idempotencyKey
-        }
-    )
-    status = 'success'
-    return res.json({error, status, charge, orderDate: new Date()})
+        )
+        status = 'success'
+        return res.json({ error, status, charge, orderDate: new Date() })
     }
     catch (error) {
         console.log(error)
         status = 'failure'
-        return res.json({error, status, msg: 'Something went wrong, please try again' })
+        return res.json({ error, status, msg: 'Something went wrong, please try again' })
     }
 })
 

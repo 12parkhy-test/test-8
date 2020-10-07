@@ -8,7 +8,8 @@ import {
     NavItem,
     NavLink,
     Container,
-    Alert
+    Alert,
+    Badge
 } from 'reactstrap'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -27,6 +28,14 @@ class NavigationBar extends Component {
 
     render() {
         const { isAuthenticated, user } = this.props.authentication
+        // let cartItems
+        // let parsedCartItems
+        // if (user) {
+        //     cartItems = user.cartItems    
+        //     parsedCartItems = JSON.stringify(cartItems)
+        //     console.log(parsedCartItems)
+        // }
+        
         const loggedIn = (
             <Fragment>
                 <NavItem>
@@ -36,12 +45,12 @@ class NavigationBar extends Component {
                 </NavItem>
                 <NavItem>
                     <NavLink href="/products">
-                        Products
+                        Start Shopping
                     </NavLink>
                 </NavItem>
                 <NavItem>
                     <NavLink href="/cart">
-                        Cart
+                        Cart 
                     </NavLink>
                 </NavItem>
                 <NavItem>

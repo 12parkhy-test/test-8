@@ -2,7 +2,7 @@ import { GET_PRODUCTS, ADD_PRODUCT, DELETE_PRODUCT, PRODUCTS_LOADING } from './t
 import axios from 'axios'
 import {getErrors} from './errorActions'
 
-export const getProducts = () => (dispatch, getState) => {
+export const getProducts = () => async (dispatch, getState) => {
     dispatch(changeProductsLoading())
     const token = getState().authentication.token
     const config = {
@@ -13,7 +13,7 @@ export const getProducts = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/products', config)
+    await axios.get('/api/products', config)
         .then((res) => {
             return dispatch({
                 type: GET_PRODUCTS,
@@ -25,7 +25,7 @@ export const getProducts = () => (dispatch, getState) => {
         })
 }
 
-export const deleteProduct = (id) => (dispatch, getState) => {
+export const deleteProduct = (id) => async (dispatch, getState) => {
     const token = getState().authentication.token
     const config = {
         headers: {
@@ -35,7 +35,7 @@ export const deleteProduct = (id) => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.delete(`/api/products/${id}`, config)
+    await axios.delete(`/api/products/${id}`, config)
         .then((res) => {
             return dispatch({
                 type: DELETE_PRODUCT,
@@ -47,7 +47,7 @@ export const deleteProduct = (id) => (dispatch, getState) => {
         })
 }
 
-export const addProduct = (product) => (dispatch, getState) => {
+export const addProduct = (product) => async (dispatch, getState) => {
     const token = getState().authentication.token
     const config = {
         headers: {
@@ -57,7 +57,7 @@ export const addProduct = (product) => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.post('/api/products', product, config)
+    await axios.post('/api/products', product, config)
         .then((res) => {
             return dispatch({
                 type: ADD_PRODUCT,
@@ -74,3 +74,4 @@ export const changeProductsLoading = () => {
         type: PRODUCTS_LOADING
     }
 }
+

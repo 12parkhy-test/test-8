@@ -19,22 +19,24 @@ class CartItemList extends Component {
         this.props.deleteCartItem(id)
     }
 
-    handlePay = (orderInfo) => {
-        orderInfo.date = Date.now()
-        orderInfo.tips = parseFloat(this.state.tips)
-        orderInfo.total = parseFloat((orderInfo.subtotal + orderInfo.taxes + orderInfo.tips).toFixed(2))
-        orderInfo.orderId = uuid()
-        this.props.orderItems(orderInfo)
-        this.props.clearCart()
-        window.location.href = '/orders'
-    }
+    // handlePay = (orderInfo) => {
+    //     orderInfo.date = Date.now()
+    //     orderInfo.tips = parseFloat(this.state.tips)
+    //     orderInfo.total = parseFloat((orderInfo.subtotal + orderInfo.taxes + orderInfo.tips).toFixed(2))
+    //     orderInfo.orderId = uuid()
+    //     this.props.orderItems(orderInfo)
+    //     this.props.clearCart()
+    //     window.location.href = '/orders'
+    // }
 
     onChange = (event) => {
         this.setState({ [event.target.name]: parseFloat(event.target.value) })
     }
 
     handleToken = (orderInfo, token) => {
-        orderInfo.tips = parseFloat(this.state.tips)
+        orderInfo.tips = parseFloat((this.state.tips).toFixed(2))
+        orderInfo.subtotal = parseFloat((orderInfo.subtotal).toFixed(2))
+        orderInfo.taxes = parseFloat((orderInfo.taxes).toFixed(2))
         orderInfo.total = parseFloat((orderInfo.subtotal + orderInfo.taxes + orderInfo.tips).toFixed(2))
         this.props.checkout(orderInfo, token)
     }
@@ -42,9 +44,16 @@ class CartItemList extends Component {
     render() {
         const { cartItems } = this.props.order
         const { isAuthenticated, user } = this.props.authentication
-        let totals = cartItems.map((cartItem) => { return cartItem.productPrice * cartItem.productQuantity })
-        let subtotal = totals.reduce((a, b) => { return a + b }, 0)
-        let taxes = subtotal * 0.1
+
+        let totals
+        let subtotal
+        let taxes
+        if (cartItems.length != 0) {
+            totals = cartItems.map((cartItem) => { return cartItem.productPrice * cartItem.productQuantity })
+            subtotal = totals.reduce((a, b) => { return a + b }, 0)
+            taxes = subtotal * 0.1
+        }
+        
         return (
             <Container>
                 {cartItems.length != 0 ? (<Fragment>
@@ -62,13 +71,14 @@ class CartItemList extends Component {
                             </thead>
                             <tbody>
                                 {cartItems.map(({ productId, productName, productPrice, productQuantity, productDescription }) => (
+                                    
                                     <Fragment key={productId}>
                                         <tr>
                                             <td></td>
                                             <td>{productName}</td>
                                             <td>${productPrice}</td>
                                             <td>{productQuantity}</td>
-                                            <td>${productPrice * productQuantity}</td>
+                                            <td>${(productPrice * productQuantity).toFixed(2)}</td>
                                             <td><Button color="danger"
                                                 onClick={this.handleDeleteCartItem.bind(this, productId)}>Remove</Button></td>
                                         </tr>
@@ -80,12 +90,12 @@ class CartItemList extends Component {
                     <Row>
                         <Col md="6" className="m-auto">
                             <Card body>
-                                <CardTitle><text style={{ float: "left" }}>Subtotal</text><text style={{ float: "right" }}>${subtotal}</text></CardTitle>
-                                <CardTitle><text style={{ float: "left" }}>Taxes</text><text style={{ float: "right" }}>${taxes}</text></CardTitle>
-                                <CardTitle><text style={{ float: "left" }}>Tips</text><text style={{ float: "right" }}>${this.state.tips}</text></CardTitle>
-                                <CardTitle><text style={{ float: "left" }}>Total</text><text style={{ float: "right" }}>${(subtotal + taxes + this.state.tips).toFixed(2)}</text></CardTitle>
-                                <CardTitle><Button color="info" style={{ width: "100%" }}
-                                    onClick={this.handlePay.bind(this, { cartItems, subtotal, taxes })}>Pay</Button></CardTitle>
+                                <CardTitle><div style={{ float: "left" }}>Subtotal</div><div style={{ float: "right" }}>${subtotal.toFixed(2)}</div></CardTitle>
+                                <CardTitle><div style={{ float: "left" }}>Taxes</div><div style={{ float: "right" }}>${taxes.toFixed(2)}</div></CardTitle>
+                                <CardTitle><div style={{ float: "left" }}>Tips</div><div style={{ float: "right" }}>${this.state.tips}</div></CardTitle>
+                                <CardTitle><div style={{ float: "left" }}>Total</div><div style={{ float: "right" }}>${(subtotal + taxes + this.state.tips).toFixed(2)}</div></CardTitle>
+                                {/* <CardTitle><Button color="info" style={{ width: "100%" }}
+                                    onClick={this.handlePay.bind(this, { cartItems, subtotal, taxes })}>Pay</Button></CardTitle> */}
                                 <CardTitle><StripeCheckout
                                  stripeKey="pk_test_51HD7H7GbsiPkKoEWGjyXFO3gDk6FzrizqBf7hkQ6o8XKW6bz0eOPKmF3qUjGFV4ksOt1ZuYePyxvW3RGsYmF41yU00EkOccneO" 
                                  token={this.handleToken.bind(this, { cartItems, subtotal, taxes })}

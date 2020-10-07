@@ -23,7 +23,7 @@ export const changeCartItemsLoading = () => {
     }
 }
 
-export const getCartItems = () => (dispatch, getState) => {
+export const getCartItems = () => async (dispatch, getState) => {
     dispatch(changeCartItemsLoading())
     const token = getState().authentication.token
     const config = {
@@ -34,7 +34,7 @@ export const getCartItems = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/cart', config)
+    await axios.get('/api/cart', config)
         .then((res) => {
             return dispatch({
                 type: GET_CARTITEMS,
@@ -46,7 +46,7 @@ export const getCartItems = () => (dispatch, getState) => {
         })
 }
 
-export const addToCart = (productInfo) => (dispatch, getState) => {
+export const addToCart = (productInfo) => async (dispatch, getState) => {
     const token = getState().authentication.token
     const config = {
         headers: {
@@ -57,7 +57,7 @@ export const addToCart = (productInfo) => (dispatch, getState) => {
         config.headers['x-auth-token'] = token
     }
     const body = JSON.stringify(productInfo)
-    axios.post('/api/cart', body, config)
+    await axios.post('/api/cart', body, config)
         .then((res) => {
             return dispatch({
                 type: ADD_TO_CART,
@@ -69,7 +69,7 @@ export const addToCart = (productInfo) => (dispatch, getState) => {
         })
 }
 
-export const deleteCartItem = (id) => (dispatch, getState) => {
+export const deleteCartItem = (id) => async (dispatch, getState) => {
     const token = getState().authentication.token
     const config = {
         headers: {
@@ -79,7 +79,7 @@ export const deleteCartItem = (id) => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.delete(`/api/cart/${id}`, config)
+    await axios.delete(`/api/cart/${id}`, config)
         .then((res) => {
             return dispatch({
                 type: DELETE_CARTITEM,
@@ -91,7 +91,7 @@ export const deleteCartItem = (id) => (dispatch, getState) => {
         })
 }
 
-export const orderItems = (orderInfo) => (dispatch, getState) => {
+export const orderItems = (orderInfo) => async (dispatch, getState) => {
     const token = getState().authentication.token
     const config = {
         headers: {
@@ -102,7 +102,7 @@ export const orderItems = (orderInfo) => (dispatch, getState) => {
         config.headers['x-auth-token'] = token
     }
     const body = JSON.stringify(orderInfo)
-    axios.post('/api/orders', body, config)
+    await axios.post('/api/orders', body, config)
         .then((res) => {
             return dispatch({
                 type: ADD_TO_ORDERHISTORY,
@@ -126,7 +126,7 @@ export const changeOrderHistoryLoading = () => {
     }
 }
 
-export const getOrderHistory = () => (dispatch, getState) => {
+export const getOrderHistory = () => async (dispatch, getState) => {
     dispatch(changeOrderHistoryLoading())
     const token = getState().authentication.token
     const config = {
@@ -137,7 +137,7 @@ export const getOrderHistory = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/orders/history', config)
+    await axios.get('/api/orders/history', config)
         .then((res) => {
             return dispatch({
                 type: GET_ORDERHISTORY,
@@ -155,7 +155,7 @@ export const changeOrderResultLoading = () => {
     }
 }
 
-export const getOrderResult = () => (dispatch, getState) => {
+export const getOrderResult = () => async (dispatch, getState) => {
     dispatch(changeOrderResultLoading())
     const token = getState().authentication.token
     const config = {
@@ -166,7 +166,7 @@ export const getOrderResult = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/orders', config)
+    await axios.get('/api/orders', config)
         .then((res) => {
             return dispatch({
                 type: GET_ORDERRESULT,
@@ -184,7 +184,7 @@ export const changeOrderDetailLoading = () => {
     }
 }
 
-export const getOrderDetail = (id) => (dispatch, getState) => {
+export const getOrderDetail = (id) => async (dispatch, getState) => {
     dispatch(changeOrderDetailLoading())
     const token = getState().authentication.token
     const config = {
@@ -195,7 +195,7 @@ export const getOrderDetail = (id) => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get(`/api/orders/order/${id}`, config)
+    await axios.get(`/api/orders/order/${id}`, config)
         .then((res) => {
             return dispatch({
                 type: GET_ORDERDETAIL,
@@ -213,7 +213,7 @@ export const clearCheckout = () => {
     }
 }
 
-export const checkout = (orderInfo, stripeToken) => (dispatch, getState) => {
+export const checkout = (orderInfo, stripeToken) => async (dispatch, getState) => {
     //dispatch(clearCheckout())
     const token = getState().authentication.token
     const config = {
@@ -225,13 +225,24 @@ export const checkout = (orderInfo, stripeToken) => (dispatch, getState) => {
         config.headers['x-auth-token'] = token
     }
     const body = JSON.stringify({ orderInfo, stripeToken })
-    axios.post('/api/orders/checkout', body, config)
+    await axios.post('/api/orders/checkout', body, config)
         .then((res) => {
             const { status, error, charge, orderDate } = res.data
             const {amount, billing_details, created, description, receipt_url, shipping} = charge
             let parsedDesc = JSON.parse(description)
             let {cartItems, subtotal, taxes, tips, orderId} = parsedDesc
-            dispatch(orderItems({cartItems, subtotal, taxes, date: orderDate, tips, total: amount * 0.01, orderId}))
+            dispatch(orderItems({
+                cartItems, 
+                subtotal, 
+                taxes,
+                date: orderDate, 
+                tips, 
+                total: amount * 0.01, 
+                orderId, 
+                billing_details,
+                receipt_url,
+                shipping
+            }))
             dispatch(clearCart())
             window.location.href = '/orders'
         })

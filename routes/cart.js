@@ -7,11 +7,16 @@ const User = require('../models/User')
 router.get('/', isAuthenticated, async (req, res) => {
     const user = await User.findById(req.user.id)
     let cartItems = JSON.parse(user.cartItems)
-    if (cartItems) {
-        return res.json(cartItems)
+    try {
+        if (cartItems) {
+            return res.json(cartItems)
+        }
+        else {
+            return res.json([])
+        }
     }
-    else {
-        return res.json([])
+    catch (error) {
+        console.log(error)
     }
 })
 

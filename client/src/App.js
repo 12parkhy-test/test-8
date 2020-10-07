@@ -22,7 +22,6 @@ class App extends Component {
   componentDidMount() {
     store.dispatch(getUser())
   }
-  
   render() {
     return (
       <Router>

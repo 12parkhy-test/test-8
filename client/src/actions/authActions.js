@@ -11,7 +11,7 @@ import { USER_LOADED,
     USERS_LOADED } from './types'
 import { getErrors } from './errorActions'
 
-export const getUser = () => (dispatch, getState) => {
+export const getUser = () => async (dispatch, getState) => {
     dispatch({
         type: USER_LOADING
     })
@@ -24,7 +24,7 @@ export const getUser = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/users/user', config)
+    await axios.get('/api/users/user', config)
         .then((res) => {
             return dispatch({
                 type: USER_LOADED,
@@ -39,7 +39,7 @@ export const getUser = () => (dispatch, getState) => {
         })
 }
 
-export const getUsers = () => (dispatch, getState) => {
+export const getUsers = () => async (dispatch, getState) => {
     dispatch({
         type: USERS_LOADING
     })
@@ -52,7 +52,7 @@ export const getUsers = () => (dispatch, getState) => {
     if (token) {
         config.headers['x-auth-token'] = token
     }
-    axios.get('/api/users/', config)
+    await axios.get('/api/users/', config)
         .then((res) => {
             return dispatch({
                 type: USERS_LOADED,
@@ -67,14 +67,14 @@ export const getUsers = () => (dispatch, getState) => {
         })
 }
 
-export const signup = ({ name, email, password }) => (dispatch) => {
+export const signup = ({ name, email, password }) => async (dispatch) => {
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     }
     const body = JSON.stringify({ name, email, password })
-    axios.post('/api/users', body, config)
+    await axios.post('/api/users', body, config)
         .then((res) => {
             return dispatch({
                 type: SIGNUP_SUCCESS,
@@ -90,14 +90,14 @@ export const signup = ({ name, email, password }) => (dispatch) => {
         })
 }
 
-export const login = ({ email, password }) => (dispatch) => {
+export const login = ({ email, password }) => async (dispatch) => {
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     }
     const body = JSON.stringify({ email, password })
-    axios.post('/api/users/login', body, config)
+    await axios.post('/api/users/login', body, config)
         .then((res) => {
             return dispatch({
                 type: LOGIN_SUCCESS,

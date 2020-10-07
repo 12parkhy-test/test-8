@@ -9,7 +9,7 @@ class UserList extends Component {
     state = {
         modal: false,
         orderHistory: '',
-        sumTotals: 0
+        sumTotals: ''
     }
 
     componentDidMount() {
@@ -28,29 +28,40 @@ class UserList extends Component {
     }
 
     handleDetails = (userInfo) => {
-        let temp = JSON.parse(userInfo.orderHistory)
-        temp.sort((a, b) => {
-            if (a.date < b.date) {
-                return 1
+        if (userInfo.orderHistory) {
+            console.log('YES')
+            let temp = JSON.parse(userInfo.orderHistory)
+            temp.sort((a, b) => {
+                if (a.date < b.date) {
+                    return 1
+                }
+                else if (a.date > b.date) {
+                    return -1
+                }
+                else {
+                    return 0
+                }
+            })
+            let sumTotals = 0
+            for (let i = 0; i < temp.length; i++) {
+                sumTotals = sumTotals + temp[i].total
+                temp[i].date = new Date(temp[i].date).toString()
             }
-            else if (a.date > b.date) {
-                return -1
-            }
-            else {
-                return 0
-            }
-        })
-        let sumTotals = 0
-        for (let i = 0; i < temp.length; i++) {
-            sumTotals = sumTotals + temp[i].total
-            temp[i].date = new Date(temp[i].date).toString()
+
+            this.setState({
+                orderHistory: temp,
+                sumTotals: sumTotals.toLocaleString()
+            })
+            this.toggle()
         }
-        
-        this.setState({
-            orderHistory: temp,
-            sumTotals: (sumTotals).toFixed(2)
-        })
-        this.toggle()
+        else {
+            console.log('NO')
+            this.setState({
+                orderHistory: [{orderId: "", total: 0, date: ""}],
+                sumTotals: 0
+            })
+            this.toggle()
+        }
     }
 
     render() {
@@ -112,7 +123,7 @@ class UserList extends Component {
                                         <Fragment key={orderId}>
                                             <tr>
                                                 <td>{orderId}</td>
-                                                <td>${total}</td>
+                                                <td>${total.toLocaleString()}</td>
                                                 <td>{date}</td>
                                                 <td></td>
                                             </tr>

@@ -35,9 +35,15 @@ class OrderHistory extends Component {
     render() {
         const { orderHistory } = this.props.order
         const { isAuthenticated, user } = this.props.authentication
-        let totals = orderHistory.map((order) => { return order.total })
-        let sumTotals = parseFloat((totals.reduce((a, b) => { return a + b }, 0)).toFixed(2))
-        sumTotals = sumTotals.toLocaleString()
+        
+        let totals
+        let sumTotals
+        if (orderHistory.length != 0) {
+            totals = orderHistory.map((order) => { return order.total })
+            sumTotals = parseFloat((totals.reduce((a, b) => { return a + b }, 0)).toFixed(2))
+            sumTotals = sumTotals.toLocaleString()
+        }
+
         return (
             <Container>
                 {orderHistory.length != 0 ? (<Fragment>
@@ -79,7 +85,7 @@ class OrderHistory extends Component {
                     <ModalBody>
                         {this.state.msg ? (<Alert color="danger">{this.state.msg}</Alert>) : null}
                         <p>Order Date: {this.state.orderInfo.date}</p>
-                        <p>Oder ID: {this.state.orderInfo.orderId}</p>
+                        <p>Order ID: {this.state.orderInfo.orderId}</p>
                         <div class="table-responsive">
                             <Table style={{ marginBottom: "5rem" }}>
                                 <thead>
@@ -99,7 +105,7 @@ class OrderHistory extends Component {
                                                 <td>{productName}</td>
                                                 <td>${productPrice}</td>
                                                 <td>{productQuantity}</td>
-                                                <td>${productPrice * productQuantity}</td>
+                                                <td>${(productPrice * productQuantity).toFixed(2)}</td>
                                             </tr>
                                         </Fragment>
                                     ))}
