@@ -156,7 +156,7 @@ router.post('/checkout', isAuthenticated, async (req, res) => {
     storageStr = JSON.stringify(storage)
     let status
     let error
-
+    let stripeTotal = parseInt(orderInfo.total * 100)
     try {
         const customer = await stripe.customers.create({
             email: stripeToken.email,
@@ -165,7 +165,7 @@ router.post('/checkout', isAuthenticated, async (req, res) => {
 
         const charge = await stripe.charges.create(
             {
-                amount: (orderInfo.total).toFixed(2) * 100,
+                amount: stripeTotal,
                 currency: "usd",
                 customer: customer.id,
                 receipt_email: stripeToken.email,

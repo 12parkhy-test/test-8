@@ -65,7 +65,7 @@ class OrderHistory extends Component {
                                         <tr>
                                             <td></td>
                                             <td>{order.orderId}</td>
-                                            <td>${order.total}</td>
+                                            <td>${(order.total).toFixed(2)}</td>
                                             <td>{order.date}</td>
                                             <td><Button color="info"
                                                 onClick={this.handleDetails.bind(this, order)}>Details</Button></td>
@@ -118,7 +118,7 @@ class OrderHistory extends Component {
                                     <CardTitle><div style={{ float: "left" }}>Subtotal</div><div style={{ float: "right" }}>${this.state.orderInfo.subtotal}</div></CardTitle>
                                     <CardTitle><div style={{ float: "left" }}>Taxes</div><div style={{ float: "right" }}>${this.state.orderInfo.taxes}</div></CardTitle>
                                     <CardTitle><div style={{ float: "left" }}>Tips</div><div style={{ float: "right" }}>${this.state.orderInfo.tips}</div></CardTitle>
-                                    <CardTitle><div style={{ float: "left" }}>Total</div><div style={{ float: "right" }}>${this.state.orderInfo.total}</div></CardTitle>
+                                    <CardTitle><div style={{ float: "left" }}>Total</div><div style={{ float: "right" }}>${(this.state.orderInfo.total + 0).toFixed(2)}</div></CardTitle>
                                 </Card>
                             </Col>
                         </Row>

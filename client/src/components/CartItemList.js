@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { Container, Table, Card, Button, CardTitle, Row, Col, Label, Input } from 'reactstrap'
+import { Container, Table, Card, Button, CardTitle, Row, Col, Label, Input, Spinner } from 'reactstrap'
 import { connect } from 'react-redux'
 import { getCartItems, deleteCartItem, orderItems, clearCart, checkout } from '../actions/orderActions'
 import PropTypes from 'prop-types'
@@ -9,10 +9,12 @@ import StripeCheckout from 'react-stripe-checkout'
 
 class CartItemList extends Component {
     state = {
-        tips: 0
+        tips: 0,
+        isLoading: false
     }
     componentDidMount() {
         this.props.getCartItems()
+        this.setState({ isLoading: false })
     }
 
     handleDeleteCartItem = (id) => {
@@ -39,6 +41,7 @@ class CartItemList extends Component {
         orderInfo.taxes = parseFloat((orderInfo.taxes).toFixed(2))
         orderInfo.total = parseFloat((orderInfo.subtotal + orderInfo.taxes + orderInfo.tips).toFixed(2))
         this.props.checkout(orderInfo, token)
+        this.setState({ isLoading: true })
     }
 
     render() {
@@ -53,9 +56,17 @@ class CartItemList extends Component {
             subtotal = totals.reduce((a, b) => { return a + b }, 0)
             taxes = subtotal * 0.1
         }
-        
+
         return (
             <Container>
+                {this.state.isLoading == true ? (
+                    <Fragment>
+                        <Spinner size="lg" color="primary" />
+                        <Spinner size="lg" color="primary" />
+                        <Spinner size="lg" color="primary" />
+                        <Spinner size="lg" color="primary" />
+                        <Spinner size="lg" color="primary" />
+                    </Fragment>) : (<Fragment></Fragment>)}
                 {cartItems.length != 0 ? (<Fragment>
                     <div class="table-responsive">
                         <Table style={{ marginBottom: "10rem" }}>
@@ -71,7 +82,7 @@ class CartItemList extends Component {
                             </thead>
                             <tbody>
                                 {cartItems.map(({ productId, productName, productPrice, productQuantity, productDescription }) => (
-                                    
+
                                     <Fragment key={productId}>
                                         <tr>
                                             <td></td>
@@ -97,12 +108,12 @@ class CartItemList extends Component {
                                 {/* <CardTitle><Button color="info" style={{ width: "100%" }}
                                     onClick={this.handlePay.bind(this, { cartItems, subtotal, taxes })}>Pay</Button></CardTitle> */}
                                 <CardTitle><StripeCheckout
-                                 stripeKey="pk_test_51HD7H7GbsiPkKoEWGjyXFO3gDk6FzrizqBf7hkQ6o8XKW6bz0eOPKmF3qUjGFV4ksOt1ZuYePyxvW3RGsYmF41yU00EkOccneO" 
-                                 token={this.handleToken.bind(this, { cartItems, subtotal, taxes })}
-                                 billingAddress
-                                 shippingAddress
-                                 amount={((subtotal + taxes + this.state.tips).toFixed(2)) * 100}
-                                 /></CardTitle>
+                                    stripeKey="pk_test_51HD7H7GbsiPkKoEWGjyXFO3gDk6FzrizqBf7hkQ6o8XKW6bz0eOPKmF3qUjGFV4ksOt1ZuYePyxvW3RGsYmF41yU00EkOccneO"
+                                    token={this.handleToken.bind(this, { cartItems, subtotal, taxes })}
+                                    billingAddress
+                                    shippingAddress
+                                    amount={((subtotal + taxes + this.state.tips).toFixed(2)) * 100}
+                                /></CardTitle>
                             </Card>
                             <div style={{ marginTop: "2.5rem", display: "flex", alignItems: 'center', justifyContent: 'center' }}>
                                 <Label for="tips" style={{ marginRight: "2.5rem" }}>Tips</Label>
